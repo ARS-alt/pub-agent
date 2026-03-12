@@ -1,4 +1,13 @@
+export const config = { api: { bodyParser: true } };
+
 export default async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") return res.status(405).end();
 
   res.setHeader("Access-Control-Allow-Origin", "*");
