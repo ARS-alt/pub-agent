@@ -41,8 +41,12 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    
+    // Return full response including any errors
+    console.log("Anthropic response:", JSON.stringify(data).slice(0, 500));
     res.status(response.status).json(data);
   } catch (err) {
+    console.error("Handler error:", err.message);
     res.status(500).json({ error: err.message });
   }
 }
