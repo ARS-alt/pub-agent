@@ -1,40 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const ACCESS_GROUPS = {
-  "Bagel Boyz":      { locations: ["La Jolla (Pearl St)", "Oceanside (Vista Way)", "San Diego (North Park)"], locationIds: ["recKngsIfHy4IWL2K","recWuwnKaf3S3is2H","reckwqBVTsqelqiuP"] },
-  "Claribase":       { locations: ["Winter Park (S Orlando)", "Orlando (Alafaya)", "Union Square", "Hadley (S Maple)", "Washington (Georgetown)"], locationIds: ["rece9H4Wsmm5j7X78","recl2ZLBY1MPy4oxh","recXJnFqlPKEdlwxy","recTjmcb7l82mLXRz","recmQy5jTvle0JWZX"] },
-  "Fresh Dining":    { locations: ["Westhampton", "Garden City (Westbury Plaza)", "San Jose (Santana Row)", "Santa Barbara", "Plainview", "Redlands", "Huntington Station (Walt Whitman)", "Bayside (Bay Terrace)", "Thousand Oaks", "Lafayette", "Upland", "Palo Alto (University Ave)"], locationIds: ["recAZwhEpNLZwuHri","recwUU3ELU7rAyD7m","recP7Pl9HQWzXu1TE","recrTJpBE0rNOrziM","recyeBgeJOr8funrF","recVFg70suslyGOh2","rectcfkuSgpNyaDSQ","reckfWAWwFm4hb8tw","reca4zDBqlVpWGbHI","recXEll9WdcHNK1Ry","recEV938XP0uPey5a","recEd7YIsnXbfDeM4"] },
-  "JipDip":          { locations: ["Atlanta (Buckhead)", "Atlanta (Krog Street)", "Atlanta (12th & Piedmont)"], locationIds: ["recQE6NClCbNfG9R4","rec5qx8QlXXWjztjW","recfr1nisYD8nqen5"] },
-  "Just Pop":        { locations: ["Westfield", "Amherst (Station 12)", "Eatontown", "Stamford (High Ridge Rd)", "Tenafly"], locationIds: ["recQv6uxbIZFFFEzd","recENHn8lqVeTGh5Z","recYYispX0f9ZV300","reczENM5SDjvqiBKI","recCnjDLWLey1bnzt"] },
-  "Lonestar":        { locations: ["Dallas (Inwood Village)", "Dallas (Henderson Ave)", "University Park (Town & Country)", "Houston (MKT)", "McKinney (West Grove)"], locationIds: ["rec0IlV3L5UXZ94lt","recvZLnSdYrBGjxv5","recwJA4dGIUN0Oljq","recprtgiZhcKRDaTA","recCIHETniLauuT8j"] },
-  "Lucky Bagel":     { locations: ["Henderson (St Rose)", "Las Vegas (Centennial Hills)"], locationIds: ["recbPQkMVBnIXPvIh","recsOTiiLCvL5YZb9"] },
-  "MPZ":             { locations: ["Winter Park (S Orlando)", "Orlando (Alafaya)", "Wesley Chapel (Bruce Downs)", "Jacksonville (Town Center)", "Tampa (Westshore)", "Viera", "Carrollwood (Dale Mabry)", "Woodmere (Eaton)", "Ann Arbor", "Sarasota", "Sarasota (University Town Center)", "Columbus (Short North)", "Birmingham (Woodward Ave)"], locationIds: ["rece9H4Wsmm5j7X78","recl2ZLBY1MPy4oxh","recfeuhI9iBWUYbqK","recaxd6iyBiQhNrvc","recJdG4BSAYfaAufM","rec1dCteRIk4GGQz6","recouihJIhAmv56p4","recLfHR9WES5XNuQp","recYMjCxaSOldNxvZ","reczOtrzQX5jSHdPw","recQb4SGjBJE6xJfU","recPxW1ohhRrr7soy","recHczk7anT3uAskW"] },
-  "Palmedough":      { locations: ["Charleston", "Greenville (Camperdown)", "Mt Pleasant (Bowman)"], locationIds: ["rec3QXivzqc1hG5M0","recUQgc1VintgpXlr","rec6fVnNsOj2pbsuK"] },
-  "PB Alabama":      { locations: ["Birmingham (The Summit)"], locationIds: ["recUCsxP1Zp5niTht"] },
-  "PC MAE":          { locations: ["Hadley (S Maple)", "Cranston (Garden City)", "Portland (Middle Street)", "Burlington"], locationIds: ["recTjmcb7l82mLXRz","recYuCrbVriZPS7gn","rec6qxhOhZNU6yXTh","recSt8Vf64xYiuNOo"] },
-  "Pop Cotswold":    { locations: ["Nashville (The Gulch)", "Charlotte (Plaza Midwood)", "Charlotte (The Bowl)", "Raleigh (Davis Park East)"], locationIds: ["recE3RXZkR81aYRXb","recKhGBTcoXFwJajC","recFrD93e8SW787cR","recnINv0X76zwLblt"] },
-  "Seeded":          { locations: ["Washington (Georgetown)", "Bethesda", "Ardmore (Suburban Square)", "Seaport", "Assembly Row", "Philadelphia (Sansom St)", "Arlington (Ballston)", "Boston (Boylston)", "Philadelphia (Di Bruno's)", "Cambridge (Harvard Square)"], locationIds: ["recmQy5jTvle0JWZX","recMtUyOQnboQG0KG","rec1C2TOZYrZ6F3Dq","recsNYicJ7o0WlfJM","rec2HvvtLZI81LDan","recoDc69juy6HqnI0","recxkKCXNkwdgBvEH","recd1Vaj4uAVXO1UU","recmgHwhJLJ4LXdVe","rec2cW2VQEQhcvt2s"] },
-  "Southern Proper": { locations: ["Chicago (Lincoln Park)", "Chicago (Fulton Market)"], locationIds: ["rec53G2pZyN2MKsga","recOYAffy6Z1Rdr3R"] },
-  "Sweetzer":        { locations: ["Calabasas (Commons)", "LA (Brentwood)", "Studio City", "Newport Beach (Westcliff)"], locationIds: ["recJrYdCSRHxguGUc","rec6Re8r4M778J5c8","recwIDWotLdFLmexC","recYiJ8qDRo0syg9F"] },
-};
-
-const EMAIL_TO_GROUP = {
-  "paulgoodman8@gmail.com": "Bagel Boyz", "sshea@sheaconstructionsd.com": "Bagel Boyz", "jen@arch5.design": "Bagel Boyz", "brent@arch5.design": "Bagel Boyz", "madwrapssandiego@gmail.com": "Bagel Boyz", "rachelle@arch5.design": "Bagel Boyz", "kaitlyn@arch5.design": "Bagel Boyz", "chico@chicossales.com": "Bagel Boyz",
-  "rob+test@claribase.com": "Claribase", "rob@claribase.com": "Claribase", "me@robweidner.com": "Claribase",
-  "laura@tap-dg.com": "Fresh Dining", "mwalden@freshdiningconcepts.com": "Fresh Dining", "cterry@freshdiningconcepts.com": "Fresh Dining", "lrooney@freshdiningconcepts.com": "Fresh Dining", "aallen@freshdiningconcepts.com": "Fresh Dining", "sgold@freshdiningconcepts.com": "Fresh Dining", "lmendoza@freshdiningconcepts.com": "Fresh Dining", "cnonno@louisandpartners.com": "Fresh Dining", "kcuster@louisandpartners.com": "Fresh Dining", "xmoore@caseengineeringinc.com": "Fresh Dining", "nstephens@caseengineeringinc.com": "Fresh Dining", "jvirtudazo@caseengineeringinc.com": "Fresh Dining", "rvicic@caseengineeringinc.com": "Fresh Dining", "alejandra@tap-dg.com": "Fresh Dining", "matt@fuzionad.com": "Fresh Dining", "sarah@fuzionad.com": "Fresh Dining", "jhubert@freshdiningconcepts.com": "Fresh Dining", "unickdesignsllc@gmail.com": "Fresh Dining", "chelseap@oculusinc.com": "Fresh Dining", "benjamink@oculusinc.com": "Fresh Dining",
-  "rajubp@gmail.com": "JipDip", "econdon@bretonavenir.com": "JipDip", "janvip045@gmail.com": "JipDip", "ben@insomniadesign.co": "JipDip",
-  "ashah0228@gmail.com": "Just Pop", "nickkenner@justsalad.com": "Just Pop", "ahmedsuhel1@gmail.com": "Just Pop", "saurabh49@gmail.com": "Just Pop", "tory@popupbagels.com": "Just Pop", "ashah@adrenterprise.com": "Just Pop", "rchang@htassociates.net": "Just Pop", "jyang@htassociates.net": "Just Pop", "jliu@htassociates.net": "Just Pop", "pbuckley1965@icloud.com": "Just Pop",
-  "kyle@gpnarchitecture.com": "Lonestar", "lief@joneschouproperties.com": "Lonestar", "brent@jmcbuilds.us": "Lonestar", "ashersendyk@gmail.com": "Lonestar", "don@meijorleague.com.au": "Lonestar", "leo@gpnarchitecture.com": "Lonestar", "cole@jmcbuilds.us": "Lonestar", "deanna@jmcbuilds.us": "Lonestar", "christian@jmcbuilds.us": "Lonestar", "simon@lsbagels.com": "Lonestar", "melissa.burness@bigpond.com": "Lonestar", "dave@lsbagels.com": "Lonestar", "mariyah@lsbagels.com": "Lonestar",
-  "raffi@daveshotchicken.com": "Lucky Bagel", "garyrubenyan@daveshotchicken.com": "Lucky Bagel", "moni@rsi-group.com": "Lucky Bagel", "rmoore@rsi-group.com": "Lucky Bagel", "kkhukoyan@socalpermithub.com": "Lucky Bagel", "shawn.shahryari@gmail.com": "Lucky Bagel",
-  "kal@mpzholdings.com": "MPZ", "erik@zeltadesign.com": "MPZ", "katelyn@zeltadesign.com": "MPZ", "scott@mpzholdings.com": "MPZ", "marissa@mpzholdings.com": "MPZ", "michael@mpzholdings.com": "MPZ", "leslie@mpzholdings.com": "MPZ", "anthony@mpzholdings.com": "MPZ",
-  "braxtondecamp@gmail.com": "Palmedough", "mnixondesign@gmail.com": "Palmedough",
-  "kpat4u@gmail.com": "PB Alabama", "rajesh.patel@example.com": "PB Alabama", "arnoldsoni@yahoo.com": "PB Alabama", "zzaveri108@gmail.com": "PB Alabama", "alexwayneb@icloud.com": "PB Alabama",
-  "jamie@renchrockadvisors.com": "PC MAE", "bhenry2121@gmail.com": "PC MAE", "jnall@silverpetrucelli.com": "PC MAE",
-  "deepenrp@gmail.com": "Pop Cotswold", "michaele.perez@icloud.com": "Pop Cotswold", "tgallinek@aol.com": "Pop Cotswold", "rachelkbowles85@gmail.com": "Pop Cotswold",
-  "brian@seededcap.com": "Seeded", "rtrego@rhjassoc.com": "Seeded", "hannah@makmor.com": "Seeded", "nwilliamson@rhjassoc.com": "Seeded", "breider@martaranoengineering.com": "Seeded", "amartarano@martaranoengineering.com": "Seeded", "kevin.kelly522@gmail.com": "Seeded", "jeff@seededcap.com": "Seeded",
-  "ch@sphospitality.com": "Southern Proper", "jkorte@cbdarchitects.com": "Southern Proper", "jjohnson@cbdarchitects.com": "Southern Proper", "fhernandez@cbdarchitects.com": "Southern Proper", "plynn@connachtgroup.com": "Southern Proper", "vincebozman@gmail.com": "Southern Proper",
-  "ameen@sweetzercapital.com": "Sweetzer", "aaron@sweetzercapital.com": "Sweetzer", "shawn@sweetzercapital.com": "Sweetzer", "james@sweetzercapital.com": "Sweetzer", "j.hernandez@arch-consultingservices.com": "Sweetzer",
-};
+const INTERNAL_GROUPS = ["PUB Corp", "Development", "C&T", "Singer", "CUAN", "JMC", "Seeded (BH Only)"];
 
 const STATIC_CONTEXT = {
   pubDirectory: [
@@ -71,15 +37,14 @@ const STATIC_CONTEXT = {
   ],
 };
 
-const buildSystemPrompt = (groupName) => {
-  const group = ACCESS_GROUPS[groupName];
-  const locationList = group.locations.join(", ");
-  const locationIds = group.locationIds.join('", "');
+const buildSystemPrompt = (groupName, locations, locationIds) => {
+  const locationList = locations.join(", ");
+  const locationIdsStr = locationIds.join('", "');
   return `You are the PUB Franchisee Assistant for Pop Up Bagels. The franchisee you are speaking with belongs to the "${groupName}" group.
 
 ## THEIR LOCATIONS
 This franchisee can only see data for these locations: ${locationList}
-Their location record IDs are: ["${locationIds}"]
+Their location record IDs are: ["${locationIdsStr}"]
 
 ## ⚠️ MANDATORY DATA FILTERS — APPLY ON EVERY SINGLE QUERY, NO EXCEPTIONS
 
@@ -94,7 +59,7 @@ Their location record IDs are: ["${locationIds}"]
 | Boil/Bake Arrangements | tblT4075YBpDffwHU | fldttQ85H1QGYJpvo | selLMlJNjCj8FfSZ0 (Current) |
 
 **Location-specific table** — BOTH filters required together:
-For ProvisionedEquipment queries, use: {"operator":"and","operands":[{"operator":"=","operands":["fldMwcABiCeuMbX63",true]},{"operator":"isAnyOf","operands":["fld6YpMFWYLy5iJsN",["${locationIds}"]]}]}
+For ProvisionedEquipment queries, use: {"operator":"and","operands":[{"operator":"=","operands":["fldMwcABiCeuMbX63",true]},{"operator":"isAnyOf","operands":["fld6YpMFWYLy5iJsN",["${locationIdsStr}"]]}]}
 
 NEVER return records outside these filters. If something isn't in the results, say it's not in the current specs.
 
@@ -156,9 +121,11 @@ function renderMarkdown(text) {
 }
 
 export default function FranchiseeAgent() {
-  const [authStep, setAuthStep] = useState("email");
+  const [authStep, setAuthStep] = useState("email"); // "email" | "loading" | "verified" | "not_found"
   const [emailInput, setEmailInput] = useState("");
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [groupLocations, setGroupLocations] = useState([]);
+  const [groupLocationIds, setGroupLocationIds] = useState([]);
   const [verifiedEmail, setVerifiedEmail] = useState("");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -167,11 +134,27 @@ export default function FranchiseeAgent() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const handleEmailSubmit = () => {
+  const handleEmailSubmit = async () => {
     const normalized = emailInput.trim().toLowerCase();
-    const group = EMAIL_TO_GROUP[normalized];
-    if (group) { setVerifiedEmail(normalized); setSelectedGroup(group); setAuthStep("verified"); }
-    else setAuthStep("not_found");
+    if (!normalized) return;
+    setAuthStep("loading");
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalized }),
+      });
+      if (res.status === 404) { setAuthStep("not_found"); return; }
+      if (!res.ok) { setAuthStep("not_found"); return; }
+      const data = await res.json();
+      setVerifiedEmail(normalized);
+      setSelectedGroup(data.group);
+      setGroupLocations(data.locations);
+      setGroupLocationIds(data.locationIds);
+      setAuthStep("verified");
+    } catch {
+      setAuthStep("not_found");
+    }
   };
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
@@ -185,16 +168,14 @@ export default function FranchiseeAgent() {
     setLoading(true);
     setLoadingStep("Looking up your question...");
     try {
-      // ✅ Calls your Vercel serverless proxy — API key stays server-side
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
-          system: buildSystemPrompt(selectedGroup),
+          system: buildSystemPrompt(selectedGroup, groupLocations, groupLocationIds),
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-          mcp_servers: [{ type: "url", url: "https://mcp.airtable.com/mcp", name: "airtable" }],
         }),
       });
       const data = await res.json();
@@ -213,31 +194,41 @@ export default function FranchiseeAgent() {
 
   const notFound = authStep === "not_found";
 
-  if (authStep === "email" || authStep === "not_found") {
+  // ── Auth screen ──────────────────────────────────────────────────────────────
+  if (authStep === "email" || authStep === "not_found" || authStep === "loading") {
     return (
       <div style={{ fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: "#0f0f0d", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#e8e4dc", padding: "32px 20px" }}>
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse at 50% 40%, rgba(180,130,60,0.08) 0%, transparent 60%)" }} />
         <div style={{ fontSize: 44, marginBottom: 16, filter: "drop-shadow(0 0 24px rgba(180,130,60,0.4))" }}>🥯</div>
         <h1 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 6px", letterSpacing: "-0.01em" }}>PUB Franchisee Assistant</h1>
-        <p style={{ color: "#6a6050", fontSize: 13, margin: "0 0 28px", textAlign: "center", maxWidth: 300, lineHeight: 1.6 }}>Enter the email address you use for your PUB Airtable access</p>
-        <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 10 }}>
-          <input
-            type="email" value={emailInput}
-            onChange={e => { setEmailInput(e.target.value); if (notFound) setAuthStep("email"); }}
-            onKeyDown={e => e.key === "Enter" && handleEmailSubmit()}
-            placeholder="you@yourcompany.com" autoFocus
-            style={{ width: "100%", background: "rgba(255,255,255,0.055)", border: notFound ? "1px solid rgba(220,80,60,0.5)" : "1px solid rgba(255,255,255,0.09)", borderRadius: 11, padding: "12px 14px", color: "#e8e4dc", fontSize: 14, fontFamily: "inherit", outline: "none" }}
-          />
-          {notFound && <p style={{ fontSize: 12, color: "#c0604a", margin: 0, lineHeight: 1.5 }}>That email isn't in our system. Contact <a href="mailto:freddy.l@popupbagels.com" style={{ color: "#c9a96e" }}>Freddy Luster</a> if you need access.</p>}
-          <button onClick={handleEmailSubmit} disabled={!emailInput.trim()} style={{ width: "100%", padding: "12px", borderRadius: 11, background: emailInput.trim() ? "linear-gradient(135deg, #b4823c, #7a5218)" : "rgba(180,130,60,0.15)", border: "none", color: "#fff", fontSize: 14, fontWeight: 600, cursor: emailInput.trim() ? "pointer" : "not-allowed", fontFamily: "inherit" }}>Continue</button>
-        </div>
-        <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } input::placeholder { color: #3e3830; }`}</style>
+        <p style={{ color: "#6a6050", fontSize: 13, margin: "0 0 28px", textAlign: "center", maxWidth: 300, lineHeight: 1.6 }}>
+          {authStep === "loading" ? "Verifying your access..." : "Enter the email address you use for your PUB Airtable access"}
+        </p>
+        {authStep !== "loading" && (
+          <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 10 }}>
+            <input
+              type="email" value={emailInput}
+              onChange={e => { setEmailInput(e.target.value); if (notFound) setAuthStep("email"); }}
+              onKeyDown={e => e.key === "Enter" && handleEmailSubmit()}
+              placeholder="you@yourcompany.com" autoFocus
+              style={{ width: "100%", background: "rgba(255,255,255,0.055)", border: notFound ? "1px solid rgba(220,80,60,0.5)" : "1px solid rgba(255,255,255,0.09)", borderRadius: 11, padding: "12px 14px", color: "#e8e4dc", fontSize: 14, fontFamily: "inherit", outline: "none" }}
+            />
+            {notFound && <p style={{ fontSize: 12, color: "#c0604a", margin: 0, lineHeight: 1.5 }}>That email isn't in our system. Contact <a href="mailto:freddy.l@popupbagels.com" style={{ color: "#c9a96e" }}>Freddy Luster</a> if you need access.</p>}
+            <button onClick={handleEmailSubmit} disabled={!emailInput.trim()} style={{ width: "100%", padding: "12px", borderRadius: 11, background: emailInput.trim() ? "linear-gradient(135deg, #b4823c, #7a5218)" : "rgba(180,130,60,0.15)", border: "none", color: "#fff", fontSize: 14, fontWeight: 600, cursor: emailInput.trim() ? "pointer" : "not-allowed", fontFamily: "inherit" }}>Continue</button>
+          </div>
+        )}
+        {authStep === "loading" && (
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            {[0,1,2].map(j => <div key={j} style={{ width: 8, height: 8, borderRadius: "50%", background: "#b4823c", animation: "dot-pulse 1.2s ease-in-out infinite", animationDelay: `${j * 0.18}s` }} />)}
+          </div>
+        )}
+        <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } input::placeholder { color: #3e3830; } @keyframes dot-pulse { 0%,100% { opacity:0.25; transform:scale(0.75); } 50% { opacity:1; transform:scale(1); } }`}</style>
       </div>
     );
   }
 
+  // ── Chat screen ──────────────────────────────────────────────────────────────
   const isEmpty = messages.length === 0;
-  const groupInfo = ACCESS_GROUPS[selectedGroup];
 
   return (
     <div style={{ fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: "#0f0f0d", minHeight: "100vh", display: "flex", flexDirection: "column", color: "#e8e4dc" }}>
@@ -246,9 +237,9 @@ export default function FranchiseeAgent() {
         <div style={{ width: 34, height: 34, borderRadius: 8, background: "linear-gradient(140deg, #c49a40, #7a5a1a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>🥯</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>PUB Franchisee Assistant</div>
-          <div style={{ fontSize: 11, color: "#6a6050", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedGroup} · {groupInfo.locations.length} location{groupInfo.locations.length !== 1 ? "s" : ""}</div>
+          <div style={{ fontSize: 11, color: "#6a6050", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedGroup} · {groupLocations.length} location{groupLocations.length !== 1 ? "s" : ""}</div>
         </div>
-        <button onClick={() => { setAuthStep("email"); setEmailInput(""); setSelectedGroup(null); setVerifiedEmail(""); setMessages([]); }}
+        <button onClick={() => { setAuthStep("email"); setEmailInput(""); setSelectedGroup(null); setVerifiedEmail(""); setMessages([]); setGroupLocations([]); setGroupLocationIds([]); }}
           style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 7, padding: "5px 10px", color: "#5a5248", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Sign out</button>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#5bc87a", boxShadow: "0 0 5px #5bc87a" }} />
@@ -262,7 +253,7 @@ export default function FranchiseeAgent() {
             <div style={{ fontSize: 40, marginBottom: 12 }}>🥯</div>
             <h2 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>Hey, {selectedGroup} 👋</h2>
             <p style={{ color: "#4a4038", fontSize: 11, maxWidth: 300, lineHeight: 1.5, margin: "0 0 4px" }}>Signed in as {verifiedEmail}</p>
-            <p style={{ color: "#6a6050", fontSize: 13, maxWidth: 300, lineHeight: 1.6, margin: "0 0 8px" }}>Your locations: <span style={{ color: "#9a8060" }}>{groupInfo.locations.join(", ")}</span></p>
+            <p style={{ color: "#6a6050", fontSize: 13, maxWidth: 300, lineHeight: 1.6, margin: "0 0 8px" }}>Your locations: <span style={{ color: "#9a8060" }}>{groupLocations.join(", ")}</span></p>
             <p style={{ color: "#4a4038", fontSize: 12, maxWidth: 300, lineHeight: 1.5, margin: "0 0 24px" }}>Ask me anything about equipment specs, vendors, finishes, smallwares, millwork, or recent spec updates.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 7, width: "100%", maxWidth: 380 }}>
               {SUGGESTIONS.map((s, i) => (
