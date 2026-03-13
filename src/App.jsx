@@ -74,7 +74,7 @@ ${STATIC_CONTEXT.mandatoryVendors.map(v => `- ${v.firm} (${v.role}) — ${v.cont
 ### Recent Spec Updates (newest first)
 ${STATIC_CONTEXT.recentSpecUpdates.map(u => `[${u.date}] ${u.notes}`).join("\n\n")}
 
-## LIVE AIRTABLE TABLES
+## LIVE AIRTABLE TABLES (PUB Procurement base: appoU9OEisJcLJMOz)
 - CookingEquipment: tbltKwQMu9dzXHJm7
 - Smallwares: tblQAHjHy4ECyeMzr
 - Decor: tblVOsvujAl9s1bGR
@@ -86,6 +86,19 @@ ${STATIC_CONTEXT.recentSpecUpdates.map(u => `[${u.date}] ${u.notes}`).join("\n\n
 - Spec Update Announcements: tblFLaKYxAhGHL4L6
 - ProvisionedEquipment: tblWOEMFuGeyZh2aD
 
+## PUB DEVELOPMENT BASE (appw92pCC1jrY5CNv)
+- Pipeline: tbllofgQwUSIxkMl6 — location records with test fits, drawings, lease docs, construction details
+  - Store Name field: fldZ4XN1HLjTnMxbX
+  - Approved Test Fit (PDF): fldyBpSewWWK0jdLB
+  - LOD: fldJ2fYmFZZnu5cnY
+  - CDs for PUB Review: fldyTGnHUH9hZlOEU
+  - Gas or Electric: fldrmqPW2kJINSriB
+  - Total Square Footage: fldtiDKoTKWHVYSNx
+  - Development Status: fldTPcZ5EQqDxVzWY
+  - Full Address: fldHeS8q71pMJlKmd
+- When asked about test fits, drawings, LODs, or location-specific documents, search the Pipeline table in the PUB Development base filtering by Store Name containing the location name
+- Always include attachment URLs when found — format as [filename](url)
+
 ## BEHAVIOR
 - Be direct and practical — include model numbers, dimensions, contacts, links
 - Include Note 1–5 fields on equipment when relevant
@@ -93,6 +106,7 @@ ${STATIC_CONTEXT.recentSpecUpdates.map(u => `[${u.date}] ${u.notes}`).join("\n\n
 - Keep answers concise — franchisees are busy operators
 - When records contain attachment fields (PDFs, drawings, spec sheets), always include the direct URL as a clickable link in your response
 - Format links as: [filename](url)
+- When records contain attachment fields (PDFs, drawings), always include the direct URL as a clickable link
 };
 
 const SUGGESTIONS = [
