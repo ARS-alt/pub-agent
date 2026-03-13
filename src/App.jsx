@@ -90,7 +90,9 @@ ${STATIC_CONTEXT.recentSpecUpdates.map(u => `[${u.date}] ${u.notes}`).join("\n\n
 - Be direct and practical — include model numbers, dimensions, contacts, links
 - Include Note 1–5 fields on equipment when relevant
 - If something can't be found, say so and direct to the right PUB contact
-- Keep answers concise — franchisees are busy operators`;
+- Keep answers concise — franchisees are busy operators
+- When records contain attachment fields (PDFs, drawings, spec sheets), always include the direct URL as a clickable link in your response
+- Format links as: [filename](url)
 };
 
 const SUGGESTIONS = [
