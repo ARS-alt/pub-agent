@@ -22,7 +22,13 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
         "anthropic-beta": "mcp-client-2025-04-04,interleaved-thinking-2025-05-14",
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify({
+        ...req.body,
+        mcp_servers: req.body.mcp_servers?.map(s => ({
+          ...s,
+          headers: { Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}` },
+        })),
+      }),
     });
 
     const data = await response.json();
