@@ -1,15 +1,5 @@
 {
-  "functions": {
-    "api/chat.js": {
-      "runtime": "nodejs20.x"
-    },
-    "api/auth.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
-    { "source": "/api/chat", "destination": "/api/chat.js" },
-    { "source": "/api/auth", "destination": "/api/auth.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
