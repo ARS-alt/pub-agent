@@ -14,6 +14,21 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   try {
+    const body = {
+      model: req.body.model,
+      max_tokens: req.body.max_tokens,
+      system: req.body.system,
+      messages: req.body.messages,
+      mcp_servers: [
+        {
+          type: "url",
+          url: "https://mcp.airtable.com/mcp",
+          name: "airtable",
+          authorization_token: process.env.AIRTABLE_TOKEN,
+        }
+      ],
+    };
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -22,13 +37,7 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
         "anthropic-beta": "mcp-client-2025-04-04",
       },
-      body: JSON.stringify({
-        ...req.body,
-        mcp_servers: req.body.mcp_servers?.map(s => ({
-          ...s,
-          headers: { Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}` },
-        })),
-      }),
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();
