@@ -3,9 +3,6 @@ export const config = { api: { bodyParser: true } };
 const INTERNAL_GROUPS = ["PUB Corp", "Development", "C&T", "Singer", "CUAN", "JMC", "Seeded (BH Only)"];
 const BASE_ID = "appoU9OEisJcLJMOz";
 const TABLE_ID = "tbl5dgo5rXnser3Iu";
-const FIELD_GROUP_NAME = "fldQMU9W8XFjR66DI";
-const FIELD_MEMBERS = "fldgvzkOkhrh7YWb7";
-const FIELD_LOCATIONS = "fldva34cqBTk6h0Jj";
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -26,37 +23,45 @@ export default async function handler(req, res) {
   const normalized = email.trim().toLowerCase();
 
   try {
-    // Fetch all access groups from Airtable
     let allRecords = [];
-    let cursor = null;
+    let offset = null;
 
     do {
       const url = new URL(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`);
-      url.searchParams.set("fields[]", FIELD_GROUP_NAME);
-      url.searchParams.set("fields[]", FIELD_MEMBERS);
-      url.searchParams.set("fields[]", FIELD_LOCATIONS);
-      if (cursor) url.searchParams.set("offset", cursor);
+      if (offset) url.searchParams.set("offset", offset);
 
       const response = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}` },
       });
 
       const data = await response.json();
+      console.log("Airtable response status:", response.status);
+      console.log("Records fetched:", data.records?.length);
+      
       allRecords = [...allRecords, ...(data.records || [])];
-      cursor = data.offset || null;
-    } while (cursor);
+      offset = data.offset || null;
+    } while (offset);
 
-    // Find the group this email belongs to
+    console.log("Total records:", allRecords.length);
+
     for (const record of allRecords) {
-      const groupName = record.fields[FIELD_GROUP_NAME];
+      const fields = record.fields;
+      const groupName = fields["Group Name"] || fields["Name"] || Object.values(fields)[0];
+      
       if (INTERNAL_GROUPS.includes(groupName)) continue;
 
-      const members = record.fields[FIELD_MEMBERS] || [];
-      const match = members.find(m => m.email?.toLowerCase() === normalized);
+      const members = fields["Members"] || fields["Collaborators"] || [];
+      console.log("Checking group:", groupName, "members:", JSON.stringify(members).slice(0, 200));
+
+      const membersArr = Array.isArray(members) ? members : [];
+      const match = membersArr.find(m => {
+        const memberEmail = (m.email || m.Email || "").toLowerCase();
+        return memberEmail === normalized;
+      });
 
       if (match) {
-        const locations = (record.fields[FIELD_LOCATIONS] || [])
-          .filter(l => !l.name?.startsWith("Prototype")); // exclude prototypes
+        const locations = (fields["Locations"] || fields["Location"] || [])
+          .filter(l => l.name && !l.name.startsWith("Prototype"));
 
         return res.status(200).json({
           group: groupName,
@@ -66,7 +71,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // No match found
+    console.log("No match found for:", normalized);
     return res.status(404).json({ error: "not_found" });
 
   } catch (err) {
