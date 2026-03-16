@@ -55,8 +55,10 @@ PUB Procurement spec tables - filter to Current only:
 
 ProvisionedEquipment filter: {"operator":"and","operands":[{"operator":"=","operands":["fldMwcABiCeuMbX63",true]},{"operator":"isAnyOf","operands":["fld6YpMFWYLy5iJsN",["${locationIdsStr}"]]}]}
 
-Pipeline filter (PUB Development base appw92pCC1jrY5CNv, table tbllofgQwUSIxkMl6):
-{"operator":"or","operands":[${locations.map(l => `{"operator":"contains","operands":["fldZ4XN1HLjTnMxbX","${l}"]}`).join(",")}]}
+Pipeline filter (PUB Development base appw92pCC1jrY5CNv, table tbllofgQwUSIxkMl6) - ALWAYS use BOTH conditions:
+{"operator":"and","operands":[{"operator":"contains","operands":["fldKABprWCWpbO0K9","${groupName}"]},{"operator":"or","operands":[${locations.map(l => `{"operator":"contains","operands":["fldZ4XN1HLjTnMxbX","${l}"]}`).join(",")}]}]}
+
+CRITICAL: fldKABprWCWpbO0K9 is the Franchisee Group field. ALWAYS filter by both group name AND location name. Never return records from other franchisee groups.`,
 
 NEVER return records outside these filters.
 
