@@ -2,6 +2,7 @@ export const config = { api: { bodyParser: true } };
 
 const BASE_ID = "appoU9OEisJcLJMOz";
 const TABLE_ID = "tbl5dgo5rXnser3Iu";
+const AIRTABLE_API = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -26,10 +27,8 @@ export default async function handler(req, res) {
     let offset = null;
 
     do {
-      const url = new URL(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`);
-      url.searchParams.append("fields[]", "Name");
-      url.searchParams.append("fields[]", "User");
-      url.searchParams.append("fields[]", "Locations");
+      // Request ALL fields so we don't miss anything
+      const url = new URL(AIRTABLE_API);
       if (offset) url.searchParams.set("offset", offset);
 
       const response = await fetch(url.toString(), {
@@ -37,19 +36,28 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
+      if (!data.records) {
+        return res.status(500).json({ error: "Airtable error", detail: data });
+      }
       allRecords = [...allRecords, ...(data.records || [])];
       offset = data.offset || null;
     } while (offset);
 
     for (const record of allRecords) {
       const fields = record.fields || {};
+
+      // Group name is in "Name" field (fldQMU9W8XFjR66DI)
       const groupName = fields["Name"];
       if (!groupName) continue;
 
+      // Members are in "User" field (fldgvzkOkhrh7YWb7) - collaborators array
       const members = fields["User"] || [];
-      const match = members.find(m => (m.email || "").toLowerCase() === normalized);
+      const match = Array.isArray(members)
+        ? members.find(m => (m.email || "").toLowerCase() === normalized)
+        : null;
 
       if (match) {
+        // Locations are in "Locations" field (fldva34cqBTk6h0Jj) - linked records
         const locations = (fields["Locations"] || [])
           .filter(l => l.name && !l.name.startsWith("Prototype"));
 
