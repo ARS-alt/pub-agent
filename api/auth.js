@@ -27,7 +27,6 @@ export default async function handler(req, res) {
     let offset = null;
 
     do {
-      // Request ALL fields so we don't miss anything
       const url = new URL(AIRTABLE_API);
       if (offset) url.searchParams.set("offset", offset);
 
@@ -36,9 +35,11 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
+
       if (!data.records) {
-        return res.status(500).json({ error: "Airtable error", detail: data });
+        return res.status(500).json({ error: "Airtable error", detail: JSON.stringify(data) });
       }
+
       allRecords = [...allRecords, ...(data.records || [])];
       offset = data.offset || null;
     } while (offset);
@@ -46,20 +47,24 @@ export default async function handler(req, res) {
     for (const record of allRecords) {
       const fields = record.fields || {};
 
-      // Group name is in "Name" field (fldQMU9W8XFjR66DI)
-      const groupName = fields["Name"];
+      // Try all possible field name variants
+      const groupName = fields["Name"] || fields["Group Name"] || fields["name"];
       if (!groupName) continue;
 
-      // Members are in "User" field (fldgvzkOkhrh7YWb7) - collaborators array
-      const members = fields["User"] || [];
-      const match = Array.isArray(members)
-        ? members.find(m => (m.email || "").toLowerCase() === normalized)
-        : null;
+      // Try all possible member field variants
+      const members = fields["User"] || fields["Members"] || fields["Collaborators"] || fields["user"] || [];
+      const membersArr = Array.isArray(members) ? members : [members];
+
+      const match = membersArr.find(m => {
+        if (!m) return false;
+        const e = (m.email || m.Email || m.emailAddress || "").toLowerCase();
+        return e === normalized;
+      });
 
       if (match) {
-        // Locations are in "Locations" field (fldva34cqBTk6h0Jj) - linked records
-        const locations = (fields["Locations"] || [])
-          .filter(l => l.name && !l.name.startsWith("Prototype"));
+        const locs = fields["Locations"] || fields["Location"] || [];
+        const locsArr = Array.isArray(locs) ? locs : [locs];
+        const locations = locsArr.filter(l => l && l.name && !l.name.startsWith("Prototype"));
 
         return res.status(200).json({
           group: groupName,
@@ -69,7 +74,13 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(404).json({ error: "not_found" });
+    // Debug: return what fields we actually found on first record
+    if (allRecords.length > 0) {
+      const sampleFields = Object.keys(allRecords[0].fields || {});
+      return res.status(404).json({ error: "not_found", debug_fields: sampleFields, debug_count: allRecords.length });
+    }
+
+    return res.status(404).json({ error: "not_found", debug_count: 0 });
 
   } catch (err) {
     console.error("Auth error:", err.message);
