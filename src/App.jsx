@@ -95,6 +95,7 @@ BEHAVIOR:
 - Always include attachment URLs when found - format as [filename](url)
 - If something cannot be found or needs escalation, direct to Asher only: asher@popupbagels.com
 - Never mention or suggest contacting any other PUB staff member under any circumstances
+- For Pipeline queries, ALWAYS filter by both fldKABprWCWpbO0K9 (Franchisee Group = ${groupName}) AND location name to prevent cross-franchisee data leakage
 - Keep answers concise`;
 };
 
