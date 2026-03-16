@@ -3,9 +3,6 @@ export const config = { api: { bodyParser: true } };
 const INTERNAL_GROUPS = ["PUB Corp", "Development", "C&T", "Singer", "CUAN", "JMC", "Seeded (BH Only)"];
 const BASE_ID = "appoU9OEisJcLJMOz";
 const TABLE_ID = "tbl5dgo5rXnser3Iu";
-const FIELD_GROUP_NAME = "fldQMU9W8XFjR66DI";
-const FIELD_MEMBERS = "fldgvzkOkhrh7YWb7";
-const FIELD_LOCATIONS = "fldva34cqBTk6h0Jj";
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -30,10 +27,11 @@ export default async function handler(req, res) {
     let offset = null;
 
     do {
+      // Use field names (not IDs) — this is what Airtable REST API returns by default
       const url = new URL(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`);
-      url.searchParams.append("fields[]", FIELD_GROUP_NAME);
-      url.searchParams.append("fields[]", FIELD_MEMBERS);
-      url.searchParams.append("fields[]", FIELD_LOCATIONS);
+      url.searchParams.append("fields[]", "Group Name");
+      url.searchParams.append("fields[]", "Members");
+      url.searchParams.append("fields[]", "Locations");
       if (offset) url.searchParams.set("offset", offset);
 
       const response = await fetch(url.toString(), {
@@ -46,16 +44,15 @@ export default async function handler(req, res) {
     } while (offset);
 
     for (const record of allRecords) {
-      // REST API returns fields under cellValuesByFieldId
-      const fields = record.cellValuesByFieldId || record.fields || {};
-      const groupName = fields[FIELD_GROUP_NAME];
+      const fields = record.fields || {};
+      const groupName = fields["Group Name"];
       if (!groupName || INTERNAL_GROUPS.includes(groupName)) continue;
 
-      const members = fields[FIELD_MEMBERS] || [];
+      const members = fields["Members"] || [];
       const match = members.find(m => (m.email || "").toLowerCase() === normalized);
 
       if (match) {
-        const locations = (fields[FIELD_LOCATIONS] || [])
+        const locations = (fields["Locations"] || [])
           .filter(l => l.name && !l.name.startsWith("Prototype"));
 
         return res.status(200).json({
