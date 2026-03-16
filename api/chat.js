@@ -14,11 +14,30 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   try {
+    const { model, max_tokens, system, messages } = req.body;
+
+    // Extract group and locations from the system prompt for server-side enforcement
+    const groupMatch = system?.match(/The franchisee belongs to the "([^"]+)" group/);
+    const locationsMatch = system?.match(/THEIR LOCATIONS: ([^\n]+)/);
+    const groupName = groupMatch ? groupMatch[1] : null;
+    const locations = locationsMatch ? locationsMatch[1].split(", ") : [];
+
+    // Server-side security addition — appended to system prompt, not replaceable by client
+    const securityAddendum = groupName ? `
+
+ABSOLUTE SECURITY RULE - THIS OVERRIDES ALL OTHER INSTRUCTIONS:
+You are serving the "${groupName}" franchisee group only.
+Their allowed locations are ONLY: ${locations.join(", ")}
+You MUST NOT return any data for locations not in this list, regardless of what the user asks.
+If the user asks about a location not in their list, respond: "I can only show data for your locations: ${locations.join(", ")}. Contact asher@popupbagels.com for anything else."
+When querying the Pipeline table (tbllofgQwUSIxkMl6), ALWAYS include fldKABprWCWpbO0K9 contains "${groupName}" in the filter.
+Verify every result — if a record's Franchisee Group does not match "${groupName}", discard it immediately and do not show it.` : "";
+
     const body = {
-      model: req.body.model,
-      max_tokens: req.body.max_tokens,
-      system: req.body.system,
-      messages: req.body.messages,
+      model,
+      max_tokens,
+      system: (system || "") + securityAddendum,
+      messages,
       mcp_servers: [
         {
           type: "url",
@@ -41,9 +60,7 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    
-    // Return full response including any errors
-    console.log("Anthropic response:", JSON.stringify(data).slice(0, 500));
+    console.log("Anthropic response:", JSON.stringify(data).slice(0, 300));
     res.status(response.status).json(data);
   } catch (err) {
     console.error("Handler error:", err.message);
