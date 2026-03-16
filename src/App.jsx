@@ -29,74 +29,69 @@ const STATIC_CONTEXT = {
   ],
   recentSpecUpdates: [
     { date: "2026-03-01", notes: "Boil Station & Bake Station elevations now available showing Pot Filler and Receptacle locations. Various cookline elevations available for guidance. Finish Schedule now in Excel format on the Prototypical Interface." },
-    { date: "2026-02-01", notes: "Finishes: Mirror mounting height updated to 41.5\" AFF to bottom (was 36\"). Sourcing: PUB secured national chain pricing through Marlite distributors for FRP. Millwork: Revised counter drawings (7', 9', 10', 12') with electrical device layout now in Airtable Millwork section. Structural: Front Counter Bulkhead set at 8'-4\", BOH Ceiling set at 8'-7\"." },
+    { date: "2026-02-01", notes: "Finishes: Mirror mounting height updated to 41.5in AFF to bottom (was 36in). Sourcing: PUB secured national chain pricing through Marlite distributors for FRP. Millwork: Revised counter drawings (7ft, 9ft, 10ft, 12ft) with electrical device layout now in Airtable Millwork section. Structural: Front Counter Bulkhead set at 8ft-4in, BOH Ceiling set at 8ft-7in." },
     { date: "2026-01-01", notes: "Grout for subway tile now Mapei 5019 Pearl Gray Ultracolor Plus FA (was 101 Rain). PUB no longer spec-ing Berner air curtains. 3-tier hot bagel shelf available for low ceiling heights. Fine Printing now has complete decal package." },
-    { date: "2025-12-01", notes: "ACT-1 in BOH: should start at 8'7\" (was 10'). Enclosures for 1 and 2 door beverage fridges now in millwork sections." },
+    { date: "2025-12-01", notes: "ACT-1 in BOH: should start at 8ft 7in (was 10ft). Enclosures for 1 and 2 door beverage fridges now in millwork sections." },
   ],
 };
 
 const buildSystemPrompt = (groupName, locations, locationIds) => {
   const locationList = locations.join(", ");
   const locationIdsStr = locationIds.join('", "');
-  return `You are the PUB Franchisee Assistant for Pop Up Bagels. The franchisee belongs to the "${groupName}" group.
+  const pipelineFilter = JSON.stringify({
+    operator: "and",
+    operands: [
+      { operator: "contains", operands: ["fldKABprWCWpbO0K9", groupName] },
+      {
+        operator: "or",
+        operands: locations.map(l => ({ operator: "contains", operands: ["fldZ4XN1HLjTnMxbX", l] }))
+      }
+    ]
+  });
 
-THEIR LOCATIONS: ${locationList}
-Location record IDs: ["${locationIdsStr}"]
-
-MANDATORY FILTERS - APPLY ON EVERY QUERY, NO EXCEPTIONS:
-
-PUB Procurement spec tables - filter to Current only:
-- CookingEquipment tbltKwQMu9dzXHJm7: fldNVyuw7TVWv0kMe = seloOpeeMcCqFzfK4
-- Smallwares tblQAHjHy4ECyeMzr: fldlZ54BmQF8u07sX = selJX35ZjdkY1skHk
-- Decor tblVOsvujAl9s1bGR: fldgKKIVSB43Ilta8 = selm4owcc8aF0BwWK
-- Finishes tblx4vQ5uHP7WjvGr: fldDrirZIgPFsvyls = selPkieMV0eulJM2d
-- Millwork tblncrrDJjTCxd66m: fldXBhsDsJkFgHZUQ = selLMlJNjCj8FfSZ0
-- Boil/Bake tblT4075YBpDffwHU: fldttQ85H1QGYJpvo = selLMlJNjCj8FfSZ0
-
-ProvisionedEquipment filter: {"operator":"and","operands":[{"operator":"=","operands":["fldMwcABiCeuMbX63",true]},{"operator":"isAnyOf","operands":["fld6YpMFWYLy5iJsN",["${locationIdsStr}"]]}]}
-
-Pipeline filter (PUB Development base appw92pCC1jrY5CNv, table tbllofgQwUSIxkMl6) - ALWAYS use BOTH conditions:
-{"operator":"and","operands":[{"operator":"contains","operands":["fldKABprWCWpbO0K9","${groupName}"]},{"operator":"or","operands":[${locations.map(l => `{"operator":"contains","operands":["fldZ4XN1HLjTnMxbX","${l}"]}`).join(",")}]}]}
-
-CRITICAL: fldKABprWCWpbO0K9 is the Franchisee Group field. ALWAYS filter by both group name AND location name. Never return records from other franchisee groups.`,
-
-NEVER return records outside these filters.
-
-PUB INTERNAL DIRECTORY:
-${STATIC_CONTEXT.pubDirectory.map(p => `${p.name} | ${p.role} | ${p.phone || "no phone"} | ${p.email}`).join("\n")}
-
-MANDATORY VENDORS:
-${STATIC_CONTEXT.mandatoryVendors.map(v => `${v.firm} (${v.role}) - ${v.contact}${v.phone ? " | " + v.phone : ""} | ${v.email}`).join("\n")}
-
-RECENT SPEC UPDATES:
-${STATIC_CONTEXT.recentSpecUpdates.map(u => `[${u.date}] ${u.notes}`).join("\n")}
-
-LIVE AIRTABLE TABLES:
-
-PUB Procurement (appoU9OEisJcLJMOz):
-- CookingEquipment: tbltKwQMu9dzXHJm7
-- Smallwares: tblQAHjHy4ECyeMzr
-- Decor: tblVOsvujAl9s1bGR
-- Finishes: tblx4vQ5uHP7WjvGr
-- Prototypical Package: tblQK7GT9b54wMc49
-- Millwork: tblncrrDJjTCxd66m
-- Boil/Bake Arrangements: tblT4075YBpDffwHU
-- External Vendor Directory: tblOHeaNj3bwCdd5v
-- Spec Update Announcements: tblFLaKYxAhGHL4L6
-- ProvisionedEquipment: tblWOEMFuGeyZh2aD
-
-PUB Development (appw92pCC1jrY5CNv) - Pipeline table: tbllofgQwUSIxkMl6
-Key fields: fldZ4XN1HLjTnMxbX (Store Name), fldHeS8q71pMJlKmd (Address), fldTPcZ5EQqDxVzWY (Dev Status), fldyBpSewWWK0jdLB (Test Fit PDF), fldJ2fYmFZZnu5cnY (LOD), fldyTGnHUH9hZlOEU (CDs), fldHO4XdcTBjPrCT9 (Design Submission), fldlBzbCYFMbe9QN2 (Approved FOH), fldrmqPW2kJINSriB (Gas/Electric), fldtiDKoTKWHVYSNx (Sq Ft), fld8gfYOcwt4u38mg (Oven Count), fldqpqJ4nbTNzxDX7 (Grease Trap), fldxNEpaoo9Bx4eUt (TF Start), fldYYClXhY8f29EPc (TF Approved), fldEYvfYkpLxkJB1f (Permit Submitted), fldRdtAyTQDntE9Rg (Permit Approved), fldyM5OTUtBfmXAKY (Construction Start), fldKcoZcXRG6SkVgP (Kickoff), fldfxNnLIWV0KUxcs (Projected Opening), fldvZLPfv7tRwJ6JA (TF Notes), fldZ4Cvro9AnCABmr (C&T Package), fldz5us3ipkOQfoA9 (Singer Package), fldOia2zMsDOnsebY (Captive Package), fldjNP81hhbTJzjCO (Illuminate Package), fldHyfhfEKbVZrCwd (GC Quote), fldGjvBhwXHI3VElJ (Lease Status), fld9j1buRBVanOkOT (Ceiling Clearances), fld46xEeCRfyASbnq (Induction Count), fldAo61PvMEsphCyE (POS Count)
-
-BEHAVIOR:
-- Be direct and practical - include model numbers, dimensions, contacts, links
-- Include Note 1-5 fields on equipment when relevant
-- For questions about a specific location's build - status, test fit, drawings, permits, equipment packages, construction timeline, utilities - query Pipeline in PUB Development first
-- Always include attachment URLs when found - format as [filename](url)
-- If something cannot be found or needs escalation, direct to Asher only: asher@popupbagels.com
-- Never mention or suggest contacting any other PUB staff member under any circumstances
-- For Pipeline queries, ALWAYS filter by both fldKABprWCWpbO0K9 (Franchisee Group = ${groupName}) AND location name to prevent cross-franchisee data leakage
-- Keep answers concise`;
+  return "You are the PUB Franchisee Assistant for Pop Up Bagels. The franchisee belongs to the \"" + groupName + "\" group.\n\n" +
+    "THEIR LOCATIONS: " + locationList + "\n" +
+    "Location record IDs: [\"" + locationIdsStr + "\"]\n\n" +
+    "MANDATORY FILTERS - APPLY ON EVERY QUERY, NO EXCEPTIONS:\n\n" +
+    "PUB Procurement spec tables - filter to Current only:\n" +
+    "- CookingEquipment tbltKwQMu9dzXHJm7: fldNVyuw7TVWv0kMe = seloOpeeMcCqFzfK4\n" +
+    "- Smallwares tblQAHjHy4ECyeMzr: fldlZ54BmQF8u07sX = selJX35ZjdkY1skHk\n" +
+    "- Decor tblVOsvujAl9s1bGR: fldgKKIVSB43Ilta8 = selm4owcc8aF0BwWK\n" +
+    "- Finishes tblx4vQ5uHP7WjvGr: fldDrirZIgPFsvyls = selPkieMV0eulJM2d\n" +
+    "- Millwork tblncrrDJjTCxd66m: fldXBhsDsJkFgHZUQ = selLMlJNjCj8FfSZ0\n" +
+    "- Boil/Bake tblT4075YBpDffwHU: fldttQ85H1QGYJpvo = selLMlJNjCj8FfSZ0\n\n" +
+    "ProvisionedEquipment filter: {\"operator\":\"and\",\"operands\":[{\"operator\":\"=\",\"operands\":[\"fldMwcABiCeuMbX63\",true]},{\"operator\":\"isAnyOf\",\"operands\":[\"fld6YpMFWYLy5iJsN\",[\"" + locationIdsStr + "\"]]}]}\n\n" +
+    "Pipeline filter (PUB Development base appw92pCC1jrY5CNv, table tbllofgQwUSIxkMl6):\n" +
+    pipelineFilter + "\n" +
+    "CRITICAL: fldKABprWCWpbO0K9 is Franchisee Group field. ALWAYS filter by BOTH group name AND location. Never return Pipeline records belonging to other franchisee groups.\n\n" +
+    "NEVER return records outside these filters.\n\n" +
+    "PUB INTERNAL DIRECTORY:\n" +
+    STATIC_CONTEXT.pubDirectory.map(p => p.name + " | " + p.role + " | " + (p.phone || "no phone") + " | " + p.email).join("\n") + "\n\n" +
+    "MANDATORY VENDORS:\n" +
+    STATIC_CONTEXT.mandatoryVendors.map(v => v.firm + " (" + v.role + ") - " + v.contact + (v.phone ? " | " + v.phone : "") + " | " + v.email).join("\n") + "\n\n" +
+    "RECENT SPEC UPDATES:\n" +
+    STATIC_CONTEXT.recentSpecUpdates.map(u => "[" + u.date + "] " + u.notes).join("\n") + "\n\n" +
+    "LIVE AIRTABLE TABLES:\n\n" +
+    "PUB Procurement (appoU9OEisJcLJMOz):\n" +
+    "- CookingEquipment: tbltKwQMu9dzXHJm7\n" +
+    "- Smallwares: tblQAHjHy4ECyeMzr\n" +
+    "- Decor: tblVOsvujAl9s1bGR\n" +
+    "- Finishes: tblx4vQ5uHP7WjvGr\n" +
+    "- Prototypical Package: tblQK7GT9b54wMc49\n" +
+    "- Millwork: tblncrrDJjTCxd66m\n" +
+    "- Boil/Bake Arrangements: tblT4075YBpDffwHU\n" +
+    "- External Vendor Directory: tblOHeaNj3bwCdd5v\n" +
+    "- Spec Update Announcements: tblFLaKYxAhGHL4L6\n" +
+    "- ProvisionedEquipment: tblWOEMFuGeyZh2aD\n\n" +
+    "PUB Development (appw92pCC1jrY5CNv) - Pipeline table: tbllofgQwUSIxkMl6\n" +
+    "Key fields: fldZ4XN1HLjTnMxbX (Store Name), fldKABprWCWpbO0K9 (Franchisee Group), fldHeS8q71pMJlKmd (Address), fldTPcZ5EQqDxVzWY (Dev Status), fldyBpSewWWK0jdLB (Test Fit PDF), fldJ2fYmFZZnu5cnY (LOD), fldyTGnHUH9hZlOEU (CDs), fldHO4XdcTBjPrCT9 (Design Submission), fldlBzbCYFMbe9QN2 (Approved FOH), fldrmqPW2kJINSriB (Gas/Electric), fldtiDKoTKWHVYSNx (Sq Ft), fld8gfYOcwt4u38mg (Oven Count), fldqpqJ4nbTNzxDX7 (Grease Trap), fldxNEpaoo9Bx4eUt (TF Start), fldYYClXhY8f29EPc (TF Approved), fldEYvfYkpLxkJB1f (Permit Submitted), fldRdtAyTQDntE9Rg (Permit Approved), fldyM5OTUtBfmXAKY (Construction Start), fldKcoZcXRG6SkVgP (Kickoff), fldfxNnLIWV0KUxcs (Projected Opening), fldvZLPfv7tRwJ6JA (TF Notes), fldZ4Cvro9AnCABmr (C&T Package), fldz5us3ipkOQfoA9 (Singer Package), fldOia2zMsDOnsebY (Captive Package), fldjNP81hhbTJzjCO (Illuminate Package), fldHyfhfEKbVZrCwd (GC Quote), fldGjvBhwXHI3VElJ (Lease Status), fld9j1buRBVanOkOT (Ceiling Clearances), fld46xEeCRfyASbnq (Induction Count), fldAo61PvMEsphCyE (POS Count)\n\n" +
+    "BEHAVIOR:\n" +
+    "- Be direct and practical - include model numbers, dimensions, contacts, links\n" +
+    "- Include Note 1-5 fields on equipment when relevant\n" +
+    "- For questions about a specific location build - status, test fit, drawings, permits, equipment packages, timeline, utilities - query Pipeline in PUB Development first\n" +
+    "- Always include attachment URLs when found - format as [filename](url)\n" +
+    "- If something cannot be found or needs escalation, direct to asher@popupbagels.com only - never mention any other PUB staff member\n" +
+    "- Keep answers concise";
 };
 
 const SUGGESTIONS = [
@@ -186,9 +181,9 @@ export default function FranchiseeAgent() {
       });
       const data = await res.json();
       const toolCalls = (data.content || []).filter(b => b.type === "mcp_tool_use");
-      if (toolCalls.length > 0) setLoadingStep(`Searched ${toolCalls.length} table${toolCalls.length > 1 ? "s" : ""}...`);
+      if (toolCalls.length > 0) setLoadingStep("Searched " + toolCalls.length + " table" + (toolCalls.length > 1 ? "s" : "") + "...");
       const reply = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
-      setMessages([...newMessages, { role: "assistant", content: reply || "I couldn't find a clear answer. Try rephrasing, or contact your PUB rep." }]);
+      setMessages([...newMessages, { role: "assistant", content: reply || "I couldn't find a clear answer. Try rephrasing, or contact asher@popupbagels.com." }]);
     } catch {
       setMessages([...newMessages, { role: "assistant", content: "Connection error - please try again." }]);
     } finally {
@@ -218,13 +213,13 @@ export default function FranchiseeAgent() {
               placeholder="you@yourcompany.com" autoFocus
               style={{ width: "100%", background: "rgba(255,255,255,0.055)", border: notFound ? "1px solid rgba(220,80,60,0.5)" : "1px solid rgba(255,255,255,0.09)", borderRadius: 11, padding: "12px 14px", color: "#e8e4dc", fontSize: 14, fontFamily: "inherit", outline: "none" }}
             />
-            {notFound && <p style={{ fontSize: 12, color: "#c0604a", margin: 0, lineHeight: 1.5 }}>That email isn't in our system. Contact <a href="mailto:freddy.l@popupbagels.com" style={{ color: "#c9a96e" }}>Freddy Luster</a> if you need access.</p>}
+            {notFound && <p style={{ fontSize: 12, color: "#c0604a", margin: 0, lineHeight: 1.5 }}>That email isn't in our system. Contact <a href="mailto:asher@popupbagels.com" style={{ color: "#c9a96e" }}>Asher</a> if you need access.</p>}
             <button onClick={handleEmailSubmit} disabled={!emailInput.trim()} style={{ width: "100%", padding: "12px", borderRadius: 11, background: emailInput.trim() ? "linear-gradient(135deg, #b4823c, #7a5218)" : "rgba(180,130,60,0.15)", border: "none", color: "#fff", fontSize: 14, fontWeight: 600, cursor: emailInput.trim() ? "pointer" : "not-allowed", fontFamily: "inherit" }}>Continue</button>
           </div>
         )}
         {authStep === "loading" && (
           <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-            {[0,1,2].map(j => <div key={j} style={{ width: 8, height: 8, borderRadius: "50%", background: "#b4823c", animation: "dot-pulse 1.2s ease-in-out infinite", animationDelay: `${j * 0.18}s` }} />)}
+            {[0,1,2].map(j => <div key={j} style={{ width: 8, height: 8, borderRadius: "50%", background: "#b4823c", animation: "dot-pulse 1.2s ease-in-out infinite", animationDelay: (j * 0.18) + "s" }} />)}
           </div>
         )}
         <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } input::placeholder { color: #3e3830; } @keyframes dot-pulse { 0%,100% { opacity:0.25; transform:scale(0.75); } 50% { opacity:1; transform:scale(1); } }`}</style>
@@ -279,7 +274,7 @@ export default function FranchiseeAgent() {
               <div style={{ display: "flex" }}>
                 <div style={{ padding: "10px 16px", borderRadius: "14px 14px 14px 3px", background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ display: "flex", gap: 4 }}>
-                    {[0,1,2].map(j => <div key={j} style={{ width: 5, height: 5, borderRadius: "50%", background: "#b4823c", animation: "dot-pulse 1.2s ease-in-out infinite", animationDelay: `${j * 0.18}s` }} />)}
+                    {[0,1,2].map(j => <div key={j} style={{ width: 5, height: 5, borderRadius: "50%", background: "#b4823c", animation: "dot-pulse 1.2s ease-in-out infinite", animationDelay: (j * 0.18) + "s" }} />)}
                   </div>
                   {loadingStep && <span style={{ fontSize: 11, color: "#6a6050" }}>{loadingStep}</span>}
                 </div>
@@ -300,7 +295,7 @@ export default function FranchiseeAgent() {
           />
           <button onClick={() => sendMessage()} disabled={loading || !input.trim()} style={{ width: 44, height: 44, borderRadius: 11, background: loading || !input.trim() ? "rgba(180,130,60,0.15)" : "linear-gradient(135deg, #b4823c, #7a5218)", border: "none", cursor: loading || !input.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#fff", flexShrink: 0 }}>↑</button>
         </div>
-        <div style={{ maxWidth: 640, margin: "7px auto 0", fontSize: 10.5, color: "#302a24", textAlign: "center" }}>Reads live from PUB Airtable bases · For urgent issues contact your PUB rep</div>
+        <div style={{ maxWidth: 640, margin: "7px auto 0", fontSize: 10.5, color: "#302a24", textAlign: "center" }}>Reads live from PUB Airtable bases · For urgent issues contact asher@popupbagels.com</div>
       </div>
 
       <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: rgba(180,130,60,0.18); border-radius: 2px; } @keyframes dot-pulse { 0%,100% { opacity:0.25; transform:scale(0.75); } 50% { opacity:1; transform:scale(1); } } textarea::placeholder { color: #3e3830; }`}</style>
