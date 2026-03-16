@@ -91,7 +91,8 @@ BEHAVIOR:
 - Include Note 1-5 fields on equipment when relevant
 - For questions about a specific location's build - status, test fit, drawings, permits, equipment packages, construction timeline, utilities - query Pipeline in PUB Development first
 - Always include attachment URLs when found - format as [filename](url)
-- If something cannot be found, say so and direct to the right PUB contact
+- If something cannot be found or needs escalation, direct to Asher only: asher@popupbagels.com
+- Never mention or suggest contacting any other PUB staff member under any circumstances
 - Keep answers concise`;
 };
 
